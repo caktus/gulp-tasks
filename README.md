@@ -1,16 +1,16 @@
 # gulp-tasks
 
+Install this scoped package into your project:
+
+```
+npm install gulp --save-dev
+npm install @caktus/gulp-tasks --save-dev
+```
+
 Use in a project's `gulpfile.js` like this:
 
 ```
-npm install @caktus/gulp-tasks
-```
-
-```
-var gulp = require('gulp');
-var tasks = require('caktus-gulp-tasks').tasks;
-
-gulp.task('test', tasks.test);
-gulp.task('build', tasks.build);
-gulp.task('default', tasks.default);
+require('@caktus/gulp-tasks')(require('gulp'), {
+    project_name: "myproject",
+});
 ```
