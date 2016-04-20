@@ -1,6 +1,6 @@
 {
   "name": "@caktus/gulp-tasks",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Common Gulp Tasks used at Caktus Group",
   "main": "index.js",
   "scripts": {
@@ -12,12 +12,7 @@
   "author": "Calvin Spealman (calvin@caktusgroup.com)",
   "license": "MIT",
   "dependencies": {
-    "babel-core": "^6.6.0",
-    "babel-plugin-transform-react-jsx": "^6.6.0",
-    "babel-preset-es2015": "^6.1.18",
-    "babelify": "^7.2.0",
     "browserify": "^12.0.1",
-    "chai": "^3.5.0",
     "file-exists": "^1.0.0",
     "gulp": "^3.8.9",
     "gulp-concat": "^2.3.4",
@@ -40,22 +35,7 @@
     "watchify": "^2.1.1",
     "vinyl-source-stream": "^0.1.1",
     "yargs": "^3.31.0",
-    "bootstrap": "^3.3.6",
-    "flux": "^2.1.1",
     "glob": "^6.0.1",
-    "gulp": "^3.8.9",
-    "babelify": "^7.2.0",
-    "immutable": "^3.7.6",
-    "jquery": "^2.1",
-    "jsdom": "^8.3.0",
-    "jsdom-global": "^1.7.0",
-    "less": "^2.6.1",
-    "mocha": "^2.4.5",
-    "mocha-jsdom": "^1.1.0",
-    "react": "^0.14.7",
-    "react-addons-test-utils": "^0.14.7",
-    "react-dom": "^0.14.7",
-    "react-functional": "^1.2.0",
-    "sinon": "^1.17.3"
+    "gulp": "^3.8.9"
   }
 }

@@ -1,4 +1,3 @@
-
 var source = require('vinyl-source-stream'); // Used to stream bundle for further handling
 var browserify = require('browserify');
 var watchify = require('watchify');
@@ -37,7 +36,16 @@ module.exports = function(gulp, defaults) {
     .array('deps')
     .default('deps', [])
     .default('project_name', defaults.project_name)
+    .default('static-root', defaults.static_root)
+    .boolean('runserver')
+    .default('runserver', defaults.runserver || false)
     .argv;
+
+  function static() {
+    var static_root = argv['static-root'] || path.join(argv.project_name, 'static');
+    Array.prototype.splice.call(arguments, 0, 0, static_root)
+    return path.join.apply(this, arguments);
+  }
 
   function modernizrTask(options) {
     if (!options.development || !fileExists(options.dest + "/modernizr.js")) {
@@ -66,7 +74,7 @@ module.exports = function(gulp, defaults) {
     });
 
     // We set our dependencies as externals on our app bundler when developing
-    (options.development ? dependencies : []).forEach(function (dep) {
+    (options.development ? argv.deps : []).forEach(function (dep) {
       appBundler.external(dep);
     });
 
@@ -102,7 +110,7 @@ module.exports = function(gulp, defaults) {
 
       var vendorsBundler = browserify({
         debug: true,
-        require: dependencies
+        require: argv.deps
       });
 
       // Run the vendor bundle
@@ -154,15 +162,15 @@ module.exports = function(gulp, defaults) {
 
     browserifyTask({
       development: options.development,
-      src: `./${ argv.project_name }/static/js/index.js`,
-      dest: `./${ argv.project_name }/static/js/`
+      src: static('js/index.js'),
+      dest: static('js'),
     });
 
     cssTask({
       development: options.development,
-      src: `./${ argv.project_name }/static/less/index.less`,
-      watch: `./${ argv.project_name }/static/less/**/*.less`,
-      dest: `./${ argv.project_name }/static/css/`
+      src: static('less/index.less'),
+      watch: static('less/**/*.less'),
+      dest: static('css'),
     });
   }
 
@@ -174,21 +182,24 @@ module.exports = function(gulp, defaults) {
       development: true,
     });
 
-    console.log("Starting Django runserver http://"+argv.address+":"+argv.port+"/");
-    var args = ["manage.py", "runserver", argv.address+":"+argv.port];
-    // Newer versions of npm mess with the PATH, sometimes putting /usr/bin at the front,
-    // so make sure we invoke the python from our virtual env explicitly.
-    var python = process.env['VIRTUAL_ENV'] + '/bin/python';
-    var runserver = spawn(python, args, {
-      stdio: "inherit",
-    });
-    runserver.on('close', function(code) {
-      if (code !== 0) {
-        console.error('Django runserver exited with error code: ' + code);
-      } else {
-        console.log('Django runserver exited normally.');
-      }
-    });
+    console.log("runserver?", argv.runserver);
+    if (argv.runserver) {
+      console.log("Starting Django runserver http://"+argv.address+":"+argv.port+"/");
+      var args = ["manage.py", "runserver", argv.address+":"+argv.port];
+      // Newer versions of npm mess with the PATH, sometimes putting /usr/bin at the front,
+      // so make sure we invoke the python from our virtual env explicitly.
+      var python = process.env['VIRTUAL_ENV'] + '/bin/python';
+      var runserver = spawn(python, args, {
+        stdio: "inherit",
+      });
+      runserver.on('close', function(code) {
+        if (code !== 0) {
+          console.error('Django runserver exited with error code: ' + code);
+        } else {
+          console.log('Django runserver exited normally.');
+        }
+      });
+    }
   });
 
   gulp.task('build', function() {
@@ -200,7 +211,7 @@ module.exports = function(gulp, defaults) {
   gulp.task('test', function () {
     require('babel-core/register');
     return gulp
-      .src(`./${ argv.project_name }/static/js/app/**/*.js`)
+      .src(static('js/app/**/*.js'))
       .pipe(istanbul({
         instrumenter: isparta.Instrumenter
         , includeUntested: true
@@ -208,7 +219,7 @@ module.exports = function(gulp, defaults) {
       .pipe(istanbul.hookRequire())
       .on('finish', function () {
         gulp
-          .src(`./${ argv.project_name }/static/js/test/**/test_*.js`, {read: false})
+          .src(static('/js/test/**/test_*.js'), {read: false})
           .pipe(mocha({
             require: [
               'jsdom-global/register'
