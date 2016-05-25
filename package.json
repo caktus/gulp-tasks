@@ -1,6 +1,6 @@
 {
   "name": "@caktus/gulp-tasks",
-  "version": "0.0.5",
+  "version": "0.1.0",
   "description": "Common Gulp Tasks used at Caktus Group",
   "main": "index.js",
   "scripts": {

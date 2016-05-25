@@ -25,7 +25,7 @@ var spawn = require('child_process').spawn;
 
 var argv;
 
-module.exports = function(gulp, defaults) {
+module.exports = function tasks(gulp, defaults) {
   var defaults = arguments.length === 1 ? {
     'port': 8000,
     'address': 'localhost',
@@ -46,9 +46,10 @@ module.exports = function(gulp, defaults) {
     Array.prototype.splice.call(arguments, 0, 0, static_root)
     return path.join.apply(this, arguments);
   }
+  tasks.static = static;
 
   function modernizrTask(options) {
-    if (!options.development || !fileExists(options.dest + "/modernizr.js")) {
+    if (!options.development || !fileExists(path.join(options.dest, "modernizr.js"))) {
       gulp.src(options.src)
         .pipe(modernizr())
         .pipe(uglify())
@@ -61,7 +62,7 @@ module.exports = function(gulp, defaults) {
 
     modernizrTask({
       src: options.src,
-      dest: options.dest + "../libs",
+      dest: path.join(options.dest, "../libs"),
       development: options.development,
     });
 
@@ -160,18 +161,27 @@ module.exports = function(gulp, defaults) {
   function rebuild(options) {
     var options = options || {};
 
-    browserifyTask({
-      development: options.development,
-      src: static('js/index.js'),
-      dest: static('js'),
-    });
+    if (typeof defaults.preBuild === "function") {
+      defaults.preBuild(options);
+    }
 
-    cssTask({
-      development: options.development,
-      src: static('less/index.less'),
-      watch: static('less/**/*.less'),
-      dest: static('css'),
-    });
+    Promise.all([
+      browserifyTask({
+        development: options.development,
+        src: static('js/index.js'),
+        dest: static('js'),
+      }),
+      cssTask({
+        development: options.development,
+        src: static('less/index.less'),
+        watch: static('less/**/*.less'),
+        dest: static('css'),
+      }),
+    ]).then(function(){
+      if (typeof defaults.postBuild === "function") {
+        defaults.postBuild(options);
+      }
+    })
   }
 
   // Starts our development workflow
@@ -182,7 +192,6 @@ module.exports = function(gulp, defaults) {
       development: true,
     });
 
-    console.log("runserver?", argv.runserver);
     if (argv.runserver) {
       console.log("Starting Django runserver http://"+argv.address+":"+argv.port+"/");
       var args = ["manage.py", "runserver", argv.address+":"+argv.port];
@@ -199,6 +208,10 @@ module.exports = function(gulp, defaults) {
           console.log('Django runserver exited normally.');
         }
       });
+    }
+
+    if (defaults.default_extra) {
+      defaults.default_extra();
     }
   });
 
