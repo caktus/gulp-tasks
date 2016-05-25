@@ -162,7 +162,7 @@ module.exports = function tasks(gulp, defaults) {
     var options = options || {};
 
     if (typeof defaults.preBuild === "function") {
-      defaults.postBuild(options);
+      defaults.preBuild(options);
     }
 
     Promise.all([
